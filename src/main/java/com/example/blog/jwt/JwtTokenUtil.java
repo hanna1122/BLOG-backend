@@ -1,5 +1,6 @@
 package com.example.blog.jwt;
 
+import com.example.blog.dto.LoginResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -24,7 +25,8 @@ public class JwtTokenUtil {
 
     private static final String secret = "jwtpassword";
 
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    public static final long ACCESS_TOKEN_EXPIRE_TIME = 30 * 60 * 1000L;
+    public static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L;
 
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getId);
@@ -44,31 +46,37 @@ public class JwtTokenUtil {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
 
-    private Boolean isTokenExpired(String token) {
-        final Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(new Date());
+
+    public Long getExpirationDateFromToken(String token) {
+        Date date = getClaimFromToken(token, Claims::getExpiration);
+        Long now = new Date().getTime();
+        return (date.getTime() - now);
     }
 
-    public Date getExpirationDateFromToken(String token) {
-        return getClaimFromToken(token, Claims::getExpiration);
-    }
-
-    public String generateTokenByEmail(String id, String auth) {
+    public LoginResponse generateTokenByEmail(String id, String auth) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", auth);
-        return generateToken(id, claims);
+        String accessToken = generateToken(id, claims, new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRE_TIME));
+        String refreshToken = generateToken(id, claims, new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRE_TIME));
+
+        return LoginResponse.builder()
+                .accessToken(accessToken)
+                .accessTime(ACCESS_TOKEN_EXPIRE_TIME)
+                .refreshToken(refreshToken)
+                .refreshTime(REFRESH_TOKEN_EXPIRE_TIME)
+                .build();
     }
 
-    public String generateToken(String id, Map<String, Object> claims) {
-        return doGenerateToken(id, claims);
+    public String generateToken(String id, Map<String, Object> claims, Date date) {
+        return doGenerateToken(id, claims, date);
     }
 
-    private String doGenerateToken(String id, Map<String, Object> claims) {
+    private String doGenerateToken(String id, Map<String, Object> claims, Date date) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setId(id)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
+                .setExpiration(date)
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
     }
@@ -92,5 +100,6 @@ public class JwtTokenUtil {
         UserDetails userDetails = User.builder().username(username).authorities(authorities).password("").build();
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
+
 
 }

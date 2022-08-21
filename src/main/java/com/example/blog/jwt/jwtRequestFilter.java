@@ -1,7 +1,9 @@
 package com.example.blog.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -17,12 +19,14 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class jwtRequestFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtUserDetailsService jwtUserDetailsService;
 
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+    private final JwtUserDetailsService jwtUserDetailsService;
+
+    private final JwtTokenUtil jwtTokenUtil;
+
+    private final RedisTemplate redisTemplate;
 
 
     @Override
@@ -39,8 +43,11 @@ public class jwtRequestFilter extends OncePerRequestFilter {
                 username = jwtTokenUtil.getUsernameFromToken(requestTokenHeader);
 
                 if(jwtTokenUtil.validateToken(requestTokenHeader)) {
-                    Authentication authentication = jwtTokenUtil.getAuthentication(requestTokenHeader);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    String isLogout = (String)redisTemplate.opsForValue().get(requestTokenHeader);
+                    if(isLogout==null){
+                        Authentication authentication = jwtTokenUtil.getAuthentication(requestTokenHeader);
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
             } catch (IllegalArgumentException e) {
                 System.out.println("Unable to get JWT Token");

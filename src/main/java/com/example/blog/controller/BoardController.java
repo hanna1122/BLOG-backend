@@ -49,7 +49,7 @@ public class BoardController {
             @ApiResponse(code = 500, message = "Internal Server Error")
     })
     @PostMapping("/board/post")
-    public @ResponseBody String boardPost(@RequestParam("files") MultipartFile[] files, @RequestParam("title") String title, @RequestParam("content") String content) throws Exception {
+    public ResponseEntity<Object> boardPost(@RequestParam("files") MultipartFile[] files, @RequestParam("title") String title, @RequestParam("content") String content) throws Exception {
 
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -61,7 +61,7 @@ public class BoardController {
         awsService.uploadMultipartFile(files,s3Path, boardId);
 
 
-        return "success";
+        return ResponseEntity.ok("success");
     }
 
     @ApiOperation(value = "블로그 게시글 수정", notes = "블로그 게시글을 수정한다.")
@@ -71,10 +71,10 @@ public class BoardController {
             @ApiResponse(code = 500, message = "Internal Server Error")
     })
     @PutMapping("/board/update")
-    public @ResponseBody String boardUpdate(@RequestBody BoardPostRequest boardPostRequest){
+    public ResponseEntity<Object> boardUpdate(@RequestBody BoardPostRequest boardPostRequest){
 
         postService.boardUpdate(boardPostRequest);
-        return "success";
+        return ResponseEntity.ok("success");
     }
 
     @ApiOperation(value = "블로그 게시글 삭제", notes = "블로그 게시글을 삭제한다.")
@@ -84,10 +84,10 @@ public class BoardController {
             @ApiResponse(code = 500, message = "Internal Server Error")
     })
     @DeleteMapping("/board/delete")
-    public @ResponseBody String boardDelete(Long boardId){
+    public ResponseEntity<Object> boardDelete(Long boardId){
 
         postService.boardDelete(boardId);
-        return "success";
+        return ResponseEntity.ok("success");
     }
 
     @ApiOperation(value = "블로그 게시글 이미지 등록", notes = "블로그 게시글 이미지를 등록한다.")
@@ -97,12 +97,12 @@ public class BoardController {
             @ApiResponse(code = 500, message = "Internal Server Error")
     })
     @PostMapping("/board/img-put")
-    public @ResponseBody String uploadBoardImages(@RequestParam("files") MultipartFile[] files, Long boardId) throws Exception {
+    public ResponseEntity<Object> uploadBoardImages(@RequestParam("files") MultipartFile[] files, Long boardId) throws Exception {
 
         String s3Path = "/board";
         awsService.uploadMultipartFile(files,s3Path, boardId);
 
-        return "success";
+        return ResponseEntity.ok("success");
     }
 
     @ApiOperation(value = "블로그 게시글 상세", notes = "블로그 게시글 상세 조회한다.")

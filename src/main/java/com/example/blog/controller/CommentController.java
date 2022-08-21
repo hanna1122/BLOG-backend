@@ -41,10 +41,10 @@ public class CommentController {
             @ApiResponse(code = 500, message = "Internal Server Error")
     })
     @PostMapping("/comment/post")
-    public @ResponseBody String commentPost(@RequestBody CommentRequest commentRequest){
+    public ResponseEntity<Object> commentPost(@RequestBody CommentRequest commentRequest){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         commentService.commentPost(commentRequest, email);
-        return "success";
+        return ResponseEntity.ok("success");
     }
 
     @ApiOperation(value="댓글 수정", notes="댓글을 수정한다.")
@@ -54,10 +54,10 @@ public class CommentController {
             @ApiResponse(code = 500, message = "Internal Server Error")
     })
     @PutMapping("/comment/update")
-    public @ResponseBody String commentUpdate(@RequestBody CommentRequest commentRequest){
+    public ResponseEntity<Object> commentUpdate(@RequestBody CommentRequest commentRequest){
         commentService.commentUpdate(commentRequest);
 
-        return "success";
+        return ResponseEntity.ok("success");
     }
 
     @ApiOperation(value="댓글 삭제", notes="댓글을 삭제한다.")
@@ -67,8 +67,9 @@ public class CommentController {
             @ApiResponse(code = 500, message = "Internal Server Error")
     })
     @DeleteMapping("/comment/delete")
-    public @ResponseBody void commentDelete(Long commentId){
+    public @ResponseBody ResponseEntity<Object> commentDelete(Long commentId){
         commentService.commentDelete(commentId);
+        return ResponseEntity.ok("success");
     }
 
 }

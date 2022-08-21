@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,9 +29,10 @@ public class LikeController {
             @ApiResponse(code = 500, message = "Internal Server Error")
     })
     @PostMapping("/like/post")
-    public @ResponseBody void boardPost(@RequestBody LikeRequest likeRequest){
+    public ResponseEntity<Object> boardPost(@RequestBody LikeRequest likeRequest){
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         likeService.likePost(likeRequest, userId);
+        return ResponseEntity.ok("success");
     }
 
     @ApiOperation(value = "like 수정", notes = "게시글에 대한 like 수정한다.")
@@ -40,8 +42,9 @@ public class LikeController {
             @ApiResponse(code = 500, message = "Internal Server Error")
     })
     @PutMapping("/like/update")
-    public @ResponseBody void boardUpdate(@RequestBody LikeRequest likeRequest){
+    public ResponseEntity<Object> boardUpdate(@RequestBody LikeRequest likeRequest){
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         likeService.likeUpdate(likeRequest, userId);
+        return ResponseEntity.ok("success");
     }
 }
